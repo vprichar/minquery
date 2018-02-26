@@ -30,7 +30,6 @@ class ResponseError extends MinQueryError {
 
 class ProtocolError extends ResponseError {
 }
-
 class MinQuery {
 
   /**
@@ -101,7 +100,6 @@ class MinQuery {
       });
     });
   }
-
 
   _requestDelete(method, path, data) {
     const url = `https://www.googleapis.com/bigquery/v2/projects/${this.projectId}${path}`;
