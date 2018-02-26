@@ -7,7 +7,6 @@ const SCOPES = [
   'https://www.googleapis.com/auth/bigquery',
   'https://www.googleapis.com/auth/bigquery.insertdata',
 ];
-
 class MinQueryError extends Error {
   constructor(message) {
     super(message);
@@ -44,7 +43,7 @@ class MinQuery {
 
     if (!options.key && !options.keyFile) {
       throw new Error('Debe especificar `options.key` ');
-    }
+    } 
     if (!options.email) {
       throw new Error('Debe especificar `options.email` :(');
     }
@@ -100,6 +99,7 @@ class MinQuery {
       });
     });
   }
+  
 
   _requestDelete(method, path, data) {
     const url = `https://www.googleapis.com/bigquery/v2/projects/${this.projectId}${path}`;
@@ -168,7 +168,7 @@ class MinQuery {
   }
 
   delete(dataset, tableName) {
-    let options = {};
+   let  options = {};
     const data = {
       tableReference: {
         projectId: this.projectId,
@@ -254,7 +254,7 @@ class MinQuery {
     return this._request('GET', `/datasets/${dataset}/tables/${tableName}`);
   }
 
-  QUERY(query) {
+QUERY(query) {
     let ArrayData = []
     return new Promise((resolve, reject) => {
       bigquery.createQueryStream(query)

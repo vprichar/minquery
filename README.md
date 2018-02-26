@@ -1,9 +1,16 @@
 
+# Minquery
+
+Minimumal BigQuery client for NodeJS. No native dependencies. ES6.
+
+## Overview
+
 This is a "minimal" client library for the BigQuery API. In contrast to the [official Google Cloud client library](https://github.com/GoogleCloudPlatform/google-cloud-node#google-bigquery), it does very little - and has very few dependencies.
 
 **Supported:**
 
 * Create a table.
+
 * Delete a table.
 * Insert row(s).
 * PATCH row(s).
@@ -13,6 +20,7 @@ This is a "minimal" client library for the BigQuery API. In contrast to the [off
 
 
 ## Usage
+
 ```js
 const MinQuery = require('minquery');
 const client = new MinQuery({
@@ -44,6 +52,7 @@ const rows = [
 client.insert('dataset', 'tablename', rows).then((response) => {
   console.log(response.body);
 }).catch(console.log);
+<<<<<<< HEAD
 
 ##### delete
 client.delete('dataset', 'tablename', schema).then(() => {

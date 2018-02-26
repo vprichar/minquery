@@ -2,10 +2,18 @@
   "name": "@button/minquery",
   "version": "1.0.1",
   "description": "Minimal client for Google Bigquery",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/button/minquery.git"
+  },
   "keywords": [
     "bigquery",
     "google"
   ],
+  "bugs": {
+    "url": "https://github.com/button/minquery/issues"
+  },
+  "homepage": "https://github.com/button/minquery",
   "main": "index.js",
   "scripts": {
     "test": "mocha --recursive tests/"
@@ -13,14 +21,14 @@
   "engines": {
     "node": ">=6.10.0"
   },
+  "author": "Button <info@usebutton.com>",
   "license": "MIT",
   "dependencies": {
-    "google-oauth-jwt": "^0.2.0",
-    "@google-cloud/bigquery": "^1.0.0"
+    "google-oauth-jwt": "^0.2.0"
   },
   "devDependencies": {
-    "@google-cloud/bigquery": "^1.0.0",
     "eslint": "^3.19.0",
+    "@google-cloud/bigquery": "^1.0.0",
     "eslint-config-airbnb-base": "^11.1.3",
     "eslint-config-button-platform": "^1.0.4",
     "eslint-plugin-mocha": "^4.9.0",
