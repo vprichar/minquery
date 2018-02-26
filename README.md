@@ -1,3 +1,4 @@
+
 # Minquery
 
 Minimumal BigQuery client for NodeJS. No native dependencies. ES6.
@@ -9,11 +10,14 @@ This is a "minimal" client library for the BigQuery API. In contrast to the [off
 **Supported:**
 
 * Create a table.
+
+* Delete a table.
 * Insert row(s).
+* PATCH row(s).
+* PUT row(s).
+* LIST row(s).
+* QUERY reponde un [].
 
-**Not supported:**
-
-* Everything else.
 
 ## Usage
 
@@ -48,10 +52,29 @@ const rows = [
 client.insert('dataset', 'tablename', rows).then((response) => {
   console.log(response.body);
 }).catch(console.log);
-```
+<<<<<<< HEAD
 
-## License and Copyright
+##### delete
+client.delete('dataset', 'tablename', schema).then(() => {
+  console.log('Yay, table created!');
+}).catch(console.log);
 
-Licensed under the MIT license. See `LICENSE.txt` for full terms.
+##### PATCH
+client.PATCH('dataset', 'tablename', rows).then((response) => {
+  console.log(response);
+}).catch(console.log);
 
-Copyright 2016 Button, Inc.
+##### PUT
+client.PUT('dataset', 'tablename', rows).then((response) => {
+  console.log(response);
+}).catch(console.log);
+
+##### LIST
+client.PUT('dataset', 'tablename', rows).then((response) => {
+  console.log(response);
+}).catch(console.log);
+
+##### QUERY  
+client.QUERY(QUERY).then((response) => {
+  console.log(response);
+}).catch(console.log);

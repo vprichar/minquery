@@ -1,12 +1,12 @@
 const fs = require('fs');
 const request = require('google-oauth-jwt').requestWithJWT();
+const BigQuery = require('@google-cloud/bigquery');
+const bigquery = new BigQuery();
 
 const SCOPES = [
   'https://www.googleapis.com/auth/bigquery',
   'https://www.googleapis.com/auth/bigquery.insertdata',
 ];
-
-/** Base error class. */
 class MinQueryError extends Error {
   constructor(message) {
     super(message);
@@ -20,7 +20,6 @@ class MinQueryError extends Error {
   }
 }
 
-/** Any sort of response error. */
 class ResponseError extends MinQueryError {
   constructor(message, response) {
     super(message);
@@ -28,39 +27,28 @@ class ResponseError extends MinQueryError {
   }
 }
 
-/** Bigquery API returned an error. */
 class ProtocolError extends ResponseError {
 }
-
 class MinQuery {
 
   /**
    * Constructor.
-   *
-   * @param  {string} options.key       A PEM-encoded private key to authenticate
-   *                                    to the BigQuery API. Must be specified if
-   *                                   `options.keyFile` is not specified.
-   * @param  {string} options.keyFile   Path to a PEM-encoded private key,
-   *                                    which will be read synchronously in
-   *                                    the constructor. Must be specified if
-   *                                    `options.key` is not specified.
-   * @param  {string} options.email     Google auth e-mail address. Required.
-   * @param  {string} options.projectId Google cloud project ID. Required.
+   * @param  {string} options.key
+   * @param  {string} options.keyFile 
+   * @param  {string} options.email 
+   * @param  {string} options.projectId 
    */
   constructor(options) {
     options = options || {};
 
     if (!options.key && !options.keyFile) {
-      throw new Error('Must specify `options.key` or `options.keyFile`');
-    } else if (options.key && options.keyFile) {
-      throw new Error('Specify only one of `options.key` or `options.keyFile`');
-    }
-
+      throw new Error('Debe especificar `options.key` ');
+    } 
     if (!options.email) {
-      throw new Error('Must specify `options.email`');
+      throw new Error('Debe especificar `options.email` :(');
     }
     if (!options.projectId) {
-      throw new Error('Must specify `options.projectId`');
+      throw new Error('Debe especificar `options.projectId`');
     }
 
     if (options.keyFile) {
@@ -69,8 +57,19 @@ class MinQuery {
       this.key = options.key;
     }
 
+    if (options.keyFileJson) {
+      this.keyFileJson = fs.readFileSync(options.keyFileJson);
+    } else {
+      this.keyFileJson = options.keyFileJson;
+    }
+
     this.email = options.email;
     this.projectId = options.projectId;
+
+    this.bigqueryClient = BigQuery({
+      projectId: options.projectId,
+      keyFilename: options.keyFileJson
+    });
   }
 
   _request(method, path, data) {
@@ -89,6 +88,33 @@ class MinQuery {
         },
       }, (err, res) => {
         if (!err && res && res.body.error) {
+          err = new ProtocolError(res.body.error.message || 'API response error', res);
+        }
+
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      });
+    });
+  }
+  
+
+  _requestDelete(method, path, data) {
+    const url = `https://www.googleapis.com/bigquery/v2/projects/${this.projectId}${path}`;
+    return new Promise((resolve, reject) => {
+      request({
+        method,
+        json: true,
+        url,
+        jwt: {
+          email: this.email,
+          key: this.key,
+          scopes: SCOPES,
+        },
+      }, (err, res) => {
+        if (!err && res && res.body) {
           err = new ProtocolError(res.body.error.message || 'API response error', res);
         }
 
@@ -141,6 +167,18 @@ class MinQuery {
     return this._request('POST', `/datasets/${dataset}/tables`, data);
   }
 
+  delete(dataset, tableName) {
+   let  options = {};
+    const data = {
+      tableReference: {
+        projectId: this.projectId,
+        datasetId: dataset,
+        tableId: tableName,
+      },
+    };
+    return this._requestDelete('DELETE', `/datasets/${dataset}/tables/${tableName}`, data);
+  }
+
   /**
    * Insert one or more rows, returning the response on success.
    *
@@ -173,6 +211,61 @@ class MinQuery {
       rows: rowData,
     };
     return this._request('POST', `/datasets/${dataset}/tables/${tableName}/insertAll`, data);
+
+  }
+
+  PATCH(dataset, tableName, rows, options) {
+    options = options || {};
+
+    const rowData = rows.map((row) => {
+      return { json: row };
+    });
+
+    const data = {
+      kind: 'bigquery#tableDataInsertAllRequest',
+      skipInvalidRows: options.skipInvalidRows !== undefined ?
+        !!options.skipInvalidRows : true,
+      ignoreUnknownValues: options.ignoreUnknownValues !== undefined ?
+        !!options.ignoreUnknownValues : true,
+      rows: rowData,
+    };
+    return this._request('PATCH', `/datasets/${dataset}/tables/${tableName}`, data);
+  }
+
+  PUT(dataset, tableName, rows, options) {
+    options = options || {};
+
+    const rowData = rows.map((row) => {
+      return { json: row };
+    });
+
+    const data = {
+      kind: 'bigquery#tableDataInsertAllRequest',
+      skipInvalidRows: options.skipInvalidRows !== undefined ?
+        !!options.skipInvalidRows : true,
+      ignoreUnknownValues: options.ignoreUnknownValues !== undefined ?
+        !!options.ignoreUnknownValues : true,
+      rows: rowData,
+    };
+    return this._request('PUT', `/datasets/${dataset}/tables/${tableName}`, data);
+  }
+
+  LIST(dataset, tableName, rows) {
+    return this._request('GET', `/datasets/${dataset}/tables/${tableName}`);
+  }
+
+QUERY(query) {
+    let ArrayData = []
+    return new Promise((resolve, reject) => {
+      bigquery.createQueryStream(query)
+        .on('error', (row) => { reject(row) })
+        .on('data', (row) => {
+          ArrayData.push(row)
+        }).on('end', () => {
+          console.log(ArrayData, 'ArrayData')
+          resolve(ArrayData);
+        });
+    });
   }
 
 }
